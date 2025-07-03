@@ -4,7 +4,10 @@ import 'favorites_page.dart';
 import 'menu_page.dart';
 import 'bmi_page.dart';
 import 'bmi_history_page.dart';
-import 'calorie_tracking_page.dart'; // ✅ Import the real Calorie Tracker page
+import 'calorie_tracking_page.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -17,7 +20,7 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = 2; // Start at Home tab
 
   final List<Widget> pages = [
-    const CalorieTrackingPage(), // ✅ Replace TrackerPage with real one
+    const CalorieTrackingPage(),
     const MenuPage(),
     const HomeInfoPage(),
     const RecipesPage(),
@@ -91,56 +94,176 @@ class _HomePageState extends State<HomePage> {
 //
 
 class HomeInfoPage extends StatelessWidget {
-  const HomeInfoPage({super.key});
+  const HomeInfoPage({Key? key}) : super(key: key);
+
+  String getUserDisplayName() {
+    final email = FirebaseAuth.instance.currentUser?.email ?? "User";
+    final namePart = email.split('@')[0];
+    return namePart[0].toUpperCase() + namePart.substring(1);
+  }
+
+  String get todayDate => DateTime.now().toIso8601String().split('T').first;
+
+  Stream<int> getTotalCalories(String collection) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Stream.empty();
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection(collection)
+        .where('date', isEqualTo: todayDate)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.fold(
+      0,
+          (sum, doc) => sum + (doc['calories'] as int),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "🏠 Home Page\n(Coming Soon)",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const FavoritesPage()),
-                );
-              },
-              icon: const Icon(Icons.favorite),
-              label: const Text('View Favorite Recipes'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    final userName = getUserDisplayName();
+
+    return StreamBuilder<int>(
+      stream: getTotalCalories('calorie_logs'),
+      builder: (context, foodSnapshot) {
+        return StreamBuilder<int>(
+          stream: getTotalCalories('exercise_logs'),
+          builder: (context, exerciseSnapshot) {
+            final food = foodSnapshot.data ?? 0;
+            final burned = exerciseSnapshot.data ?? 0;
+            final net = food - burned;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.person, size: 26, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Welcome, $userName",
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Your Daily Summary",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 🍽 Meals Logged
+                  Card(
+                    color: Colors.orange.shade50,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
+                    child: ListTile(
+                      leading: const Icon(Icons.restaurant_menu, color: Colors.deepOrange),
+                      title: const Text("Today's Meals"),
+                      subtitle: Text("$food kcal consumed"),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 🏋️ Exercise Logged
+                  Card(
+                    color: Colors.blue.shade50,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
+                    child: ListTile(
+                      leading: const Icon(Icons.fitness_center, color: Colors.indigo),
+                      title: const Text("Exercise Logged"),
+                      subtitle: Text("$burned kcal burned"),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 🔥 Net Calories
+                  Card(
+                    color: Colors.green.shade50,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
+                    child: ListTile(
+                      leading: const Icon(Icons.local_fire_department, color: Colors.green),
+                      title: const Text("Net Calories"),
+                      subtitle: Text("$net kcal"),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // 🔗 Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const BmiHistoryPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.history),
+                          label: const Text("View BMI History"),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: Colors.green.shade600,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const FavoritesPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.favorite),
+                          label: const Text("View Favorites"),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: Colors.redAccent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const BmiHistoryPage()),
-                );
-              },
-              icon: const Icon(Icons.history),
-              label: const Text('View BMI History'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }
+
+
+

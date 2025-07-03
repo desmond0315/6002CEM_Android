@@ -152,11 +152,6 @@ class _BmiPageState extends State<BmiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("BMI Calculator"),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

@@ -18,7 +18,7 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    // ✅ Redirect to login if no user is signed in
+    // Redirect to login if no user is signed in
     if (user == null) {
       return const LoginPage();
     }

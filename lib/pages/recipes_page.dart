@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'recipe_detail_page.dart';
 
 class RecipesPage extends StatefulWidget {
-  const RecipesPage({super.key}); // ✅ Const constructor
+  const RecipesPage({super.key}); //
 
   @override
   State<RecipesPage> createState() => _RecipesPageState();

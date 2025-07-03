@@ -131,6 +131,8 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
       ),
     );
 
+
+
     if (confirmed == true) {
       await FirebaseFirestore.instance
           .collection('users')
@@ -139,6 +141,53 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
           .doc(docId)
           .delete();
     }
+  }
+
+  Future<void> _resetTodayLogs() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Today\'s Logs'),
+        content: const Text('This will delete all meal and exercise logs for today. Continue?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    // Delete meals
+    final mealSnapshot = await userDoc
+        .collection('calorie_logs')
+        .where('date', isEqualTo: todayDate)
+        .get();
+    for (var doc in mealSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    // Delete exercises
+    final exerciseSnapshot = await userDoc
+        .collection('exercise_logs')
+        .where('date', isEqualTo: todayDate)
+        .get();
+    for (var doc in exerciseSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Today\'s logs have been reset.')),
+    );
   }
 
   Stream<QuerySnapshot> _getTodayMeals() {
@@ -166,6 +215,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   int _sumCalories(List<DocumentSnapshot> docs) {
     return docs.fold(0, (sum, doc) => sum + (doc['calories'] as int));
   }
+
 
   Widget _buildInputCard({
     required String title,
@@ -370,6 +420,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
               },
             ),
 
+
             StreamBuilder<QuerySnapshot>(
               stream: _getTodayExercises(),
               builder: (context, snapshot) {
@@ -393,6 +444,18 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                 );
               },
             ),
+            ElevatedButton.icon(
+              onPressed: _resetTodayLogs,
+              icon: const Icon(Icons.refresh),
+              label: const Text("Reset Today's Logs"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
