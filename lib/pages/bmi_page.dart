@@ -88,7 +88,6 @@ class _BmiPageState extends State<BmiPage> {
       });
     }
   }
-
   Widget _categoryTable() {
     List<Map<String, dynamic>> categories = [
       {"label": "Very Severely Underweight", "range": "≤ 15.9", "min": 0.0, "max": 15.9},

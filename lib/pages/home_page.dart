@@ -164,7 +164,7 @@ class HomeInfoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // 🍽 Meals Logged
+                  // Meals Logged
                   Card(
                     color: Colors.orange.shade50,
                     shape: RoundedRectangleBorder(
@@ -179,7 +179,7 @@ class HomeInfoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // 🏋️ Exercise Logged
+                  // Exercise Logged
                   Card(
                     color: Colors.blue.shade50,
                     shape: RoundedRectangleBorder(
@@ -194,7 +194,7 @@ class HomeInfoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // 🔥 Net Calories
+                  // Net Calories
                   Card(
                     color: Colors.green.shade50,
                     shape: RoundedRectangleBorder(
@@ -209,7 +209,7 @@ class HomeInfoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // 🔗 Buttons
+                  // Buttons
                   Row(
                     children: [
                       Expanded(

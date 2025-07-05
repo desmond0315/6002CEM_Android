@@ -30,12 +30,12 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     if (isFavorite) {
       await FavoritesService().removeFavorite(widget.meal['idMeal']);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Removed from favorites')),
+        const SnackBar(content: Text('Removed from favorites')),
       );
     } else {
       await FavoritesService().saveFavorite(widget.meal);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('💖 Saved to favorites')),
+        const SnackBar(content: Text('Saved to favorites')),
       );
     }
 
@@ -95,7 +95,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                 child: Image.network(widget.meal['strMealThumb']),
               ),
             const SizedBox(height: 20),
-            const Text("📝 Instructions",
+            const Text("Instructions",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             Text(
@@ -103,7 +103,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
-            const Text("🧂 Ingredients",
+            const Text("Ingredients",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             ...ingredients.map((item) => ListTile(

@@ -100,16 +100,16 @@ class _MenuPageState extends State<MenuPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _nutrientLabel("🔥 Calories", "${food['nf_calories']} kcal"),
-                _nutrientLabel("💪 Protein", "${food['nf_protein']} g"),
+                _nutrientLabel(" Calories", "${food['nf_calories']} kcal"),
+                _nutrientLabel(" Protein", "${food['nf_protein']} g"),
               ],
             ),
             const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _nutrientLabel("🥓 Fat", "${food['nf_total_fat']} g"),
-                _nutrientLabel("🍞 Carbs", "${food['nf_total_carbohydrate']} g"),
+                _nutrientLabel(" Fat", "${food['nf_total_fat']} g"),
+                _nutrientLabel(" Carbs", "${food['nf_total_carbohydrate']} g"),
               ],
             ),
           ],
